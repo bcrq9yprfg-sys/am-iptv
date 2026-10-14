@@ -200,7 +200,9 @@ router.post('/webhook/stripe', express.raw({ type: 'application/json' }), (req, 
     case 'invoice.paid': {
       // Verlenging bij recurring abonnement
       const inv = event.data.object;
-      const sub = inv.subscription;
+      // Nieuwe Stripe API-versies: subscription staat onder parent.subscription_details
+      const sub = inv.subscription
+        || (inv.parent && inv.parent.subscription_details && inv.parent.subscription_details.subscription);
       if (sub) {
         const existing = db.db.prepare(
           "SELECT * FROM subscriptions WHERE stripe_sub_id=? AND status='active'"
