@@ -41,6 +41,11 @@ db.exec(`
     processed   INTEGER NOT NULL DEFAULT (unixepoch())
   );
 
+  CREATE TABLE IF NOT EXISTS trials (
+    device      TEXT PRIMARY KEY,
+    started_at  INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+
   CREATE TABLE IF NOT EXISTS pair_sessions (
     code        TEXT PRIMARY KEY,
     type        TEXT,
@@ -53,6 +58,13 @@ db.exec(`
     used        INTEGER NOT NULL DEFAULT 0
   );
 `);
+
+// Migratie: geheime sleutel per koppelsessie (bestaande databases)
+try { db.exec('ALTER TABLE pair_sessions ADD COLUMN token TEXT'); } catch (_) { /* bestaat al */ }
+
+/* ---------- Proefperiode (per TV) ---------- */
+const startTrial = db.prepare('INSERT OR IGNORE INTO trials (device) VALUES (?)');
+const getTrial = db.prepare('SELECT * FROM trials WHERE device = ?');
 
 /* ---------- Users ---------- */
 const getUser = db.prepare('SELECT * FROM users WHERE email = ?');
@@ -91,9 +103,11 @@ function expiresAt(plan) {
 
 /* ---------- Pair sessions ---------- */
 const createPair = db.prepare(
-  `INSERT INTO pair_sessions (code, expires_at) VALUES (?, ?)`
+  `INSERT INTO pair_sessions (code, expires_at, token) VALUES (?, ?, ?)`
 );
 const getPair = db.prepare('SELECT * FROM pair_sessions WHERE code = ?');
+const deletePair = db.prepare('DELETE FROM pair_sessions WHERE code = ?');
+const cleanPairs = db.prepare('DELETE FROM pair_sessions WHERE expires_at < unixepoch() - 3600');
 const submitPair = db.prepare(
   `UPDATE pair_sessions SET type=?, m3u_url=?, xtream_host=?, xtream_user=?, xtream_pass=?, used=1
    WHERE code=? AND used=0 AND expires_at > unixepoch()`
@@ -104,7 +118,8 @@ module.exports = {
   getUser, getUserById, createUser,
   getActiveSub, getSubByLicense, createSub, updateSubStatus,
   eventSeen, markEvent, expiresAt,
-  createPair, getPair, submitPair,
+  createPair, getPair, submitPair, deletePair, cleanPairs,
+  startTrial, getTrial,
   newId: uuidv4,
   newLicense: () => uuidv4().replace(/-/g, '').toUpperCase().slice(0, 20)
 };

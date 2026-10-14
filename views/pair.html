@@ -158,8 +158,8 @@
     <!-- FORM STATE -->
     <div id="stateForm" class="state active">
       <h1>📺 TV koppelen</h1>
-      <p class="sub">Code op je TV: <span class="code-badge">{{ code }}</span><br>
-        Vul je streaminggegevens in — ze worden direct naar je TV gestuurd.</p>
+      <p class="sub"><span>Code op je TV:</span> <span class="code-badge">{{ code }}</span><br>
+        <span>Vul je streaminggegevens in — ze worden direct naar je TV gestuurd.</span></p>
 
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('m3u', this)">M3U Playlist</button>
@@ -201,7 +201,7 @@
     <div id="stateOk" class="state">
       <div class="state-icon">✅</div>
       <h2>Gelukt!</h2>
-      <p>Je gegevens zijn naar je TV gestuurd.<br>Je kunt dit venster sluiten.</p>
+      <p><span>Je gegevens zijn naar je TV gestuurd.</span><br><span>Je kunt dit venster sluiten.</span></p>
     </div>
 
     <!-- ERROR STATE -->
@@ -214,6 +214,25 @@
   </div>
 
   <script>
+    /* Taal volgt de telefoon: Nederlands of Engels */
+    const NL = (navigator.language || '').toLowerCase().startsWith('nl');
+    const EN = {
+      '📺 TV koppelen': '📺 Connect your TV', 'Code op je TV:': 'Code on your TV:',
+      'Vul je streaminggegevens in — ze worden direct naar je TV gestuurd.': 'Enter your playlist details — they are sent straight to your TV.',
+      'Gebruikersnaam': 'Username', 'Wachtwoord': 'Password', 'gebruikersnaam': 'username',
+      'Naar TV sturen →': 'Send to TV →', 'Versturen…': 'Sending…', 'Gelukt!': 'Done!',
+      'Je gegevens zijn naar je TV gestuurd.': 'Your details have been sent to your TV.',
+      'Je kunt dit venster sluiten.': 'You can close this page.', 'Mislukt': 'Failed',
+      'Probeer opnieuw.': 'Please try again.', 'Niet gelukt': 'Not sent', 'Fout': 'Error'
+    };
+    const t = s => NL ? s : (EN[s] || s);
+    if (!NL) {
+      document.documentElement.lang = 'en';
+      const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      const nodes = []; let n; while ((n = w.nextNode())) nodes.push(n);
+      nodes.forEach(n => { const v = n.nodeValue.trim(); if (v && EN[v]) n.nodeValue = n.nodeValue.replace(v, EN[v]); });
+      document.querySelectorAll('[placeholder]').forEach(el => { const v = el.placeholder; if (EN[v]) el.placeholder = EN[v]; });
+    }
     const CODE = '{{ code }}';
 
     function switchTab(type, btn) {
@@ -233,19 +252,19 @@
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
-      btn.textContent = 'Versturen…';
+      btn.textContent = t('Versturen…');
 
       const type = document.getElementById('typeField').value;
       const body = { type };
       if (type === 'm3u') {
         body.m3u_url = document.getElementById('m3uUrl').value.trim();
-        if (!body.m3u_url) { btn.disabled=false; btn.textContent='Naar TV sturen →'; return; }
+        if (!body.m3u_url) { btn.disabled=false; btn.textContent=t('Naar TV sturen →'); return; }
       } else {
         body.xtream_host = document.getElementById('xHost').value.trim();
         body.xtream_user = document.getElementById('xUser').value.trim();
         body.xtream_pass = document.getElementById('xPass').value;
         if (!body.xtream_host || !body.xtream_user || !body.xtream_pass) {
-          btn.disabled=false; btn.textContent='Naar TV sturen →'; return;
+          btn.disabled=false; btn.textContent=t('Naar TV sturen →'); return;
         }
       }
 
@@ -259,11 +278,11 @@
         if (!r.ok) throw new Error(data.error || 'Fout');
         showState('stateOk');
       } catch (err) {
-        document.getElementById('errTitle').textContent = 'Niet gelukt';
+        document.getElementById('errTitle').textContent = t('Niet gelukt');
         document.getElementById('errMsg').textContent = err.message;
         showState('stateErr');
         btn.disabled = false;
-        btn.textContent = 'Naar TV sturen →';
+        btn.textContent = t('Naar TV sturen →');
       }
     }
   </script>

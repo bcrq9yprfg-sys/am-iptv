@@ -266,23 +266,56 @@ router.get('/api/license/:key', (req, res) => {
    QR PAIRING — TV-app koppelen via telefoon
    ====================================================== */
 
-// TV roept dit aan: genereert een 6-karakter code en geeft terug
-router.post('/api/pair', (req, res) => {
-  const code = Math.random().toString(36).slice(2, 8).toUpperCase(); // bv. "X3K9QZ"
-  const expiresAt = Math.floor(Date.now() / 1000) + 600; // 10 minuten geldig
-  db.createPair.run(code, expiresAt);
-  const pairUrl = `${BASE_URL}/pair/${code}`;
-  res.json({ code, url: pairUrl });
+const crypto = require('crypto');
+const TRIAL_DAYS = 3;
+
+// TV-app draait niet op dit domein: CORS voor de TV-routes
+function tvCors(req, res, next) {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Cache-Control', 'no-store');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+}
+router.use(['/api/pair', '/api/trial'], tvCors);
+
+/* Proefperiode: 3 dagen per TV, start bij eerste aanroep */
+router.get('/api/trial/:device', (req, res) => {
+  const device = String(req.params.device || '').replace(/[^A-Za-z0-9._-]/g, '').slice(0, 128);
+  if (device.length < 8) return res.status(400).json({ error: 'device' });
+  db.startTrial.run(device);
+  const t = db.getTrial.get(device);
+  const expires = t.started_at + TRIAL_DAYS * 86400;
+  const now = Math.floor(Date.now() / 1000);
+  res.json({ active: now < expires, started_at: t.started_at, expires_at: expires, now });
 });
 
-// TV pollt dit elke 2 seconden
+// TV vraagt een koppelcode aan; krijgt ook een geheime sleutel om het resultaat op te halen
+router.post('/api/pair', (req, res) => {
+  db.cleanPairs.run();
+  const ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // zonder verwarrende tekens
+  let code = '';
+  for (const b of crypto.randomBytes(6)) code += ABC[b % ABC.length];
+  const token = crypto.randomBytes(24).toString('hex');
+  const expiresAt = Math.floor(Date.now() / 1000) + 600; // 10 minuten geldig
+  db.createPair.run(code, expiresAt, token);
+  res.json({ code, token, url: `${BASE_URL}/pair/${code}`, expires_at: expiresAt });
+});
+
+// TV pollt dit elke 2 seconden (met geheime sleutel); gegevens worden na ophalen gewist
 router.get('/api/pair/:code/result', (req, res) => {
-  const session = db.getPair.get(req.params.code.toUpperCase());
-  if (!session) return res.status(404).json({ error: 'Onbekende code' });
+  const code = String(req.params.code || '').toUpperCase();
+  const session = db.getPair.get(code);
+  if (!session || !session.token || session.token !== String(req.query.token || '')) {
+    return res.status(404).json({ status: 'unknown' });
+  }
   if (session.expires_at < Math.floor(Date.now() / 1000)) {
+    db.deletePair.run(code);
     return res.json({ status: 'expired' });
   }
   if (!session.used) return res.json({ status: 'pending' });
+  db.deletePair.run(code);
   res.json({
     status: 'done',
     type: session.type,
