@@ -26,6 +26,9 @@ router.get('/', (req, res) => {
   res.render('index', { user });
 });
 
+/* Privacybeleid (vereist door Samsung TV Seller Office) */
+router.get('/privacy', (req, res) => res.render('privacy'));
+
 /* ======================================================
    TAAL WISSELEN
    ====================================================== */
@@ -237,7 +240,11 @@ router.post('/webhook/stripe', express.raw({ type: 'application/json' }), (req, 
    GET /api/license/:key → { valid, plan, expires_at }
    ====================================================== */
 router.get('/api/license/:key', (req, res) => {
-  const sub = db.getSubByLicense.get(req.params.key);
+  // TV-app draait niet op dit domein: publieke, alleen-lezen controle toestaan
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Cache-Control', 'no-store');
+  const key = String(req.params.key || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const sub = db.getSubByLicense.get(key);
   if (!sub) return res.json({ valid: false });
   // Controleer verloopdatum
   if (sub.expires_at && sub.expires_at < Math.floor(Date.now() / 1000)) {
@@ -247,8 +254,7 @@ router.get('/api/license/:key', (req, res) => {
   res.json({
     valid: true,
     plan: sub.plan,
-    expires_at: sub.expires_at,
-    email: sub.email
+    expires_at: sub.expires_at
   });
 });
 
