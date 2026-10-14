@@ -88,13 +88,28 @@ router.get('/logout', (req, res) => {
 router.get('/dashboard', requireAuth, (req, res) => {
   const user = db.getUserById.get(req.userId);
   if (!user) return res.redirect('/login');
-  const sub = db.getActiveSub.get(req.userId);
+  let sub = db.getActiveSub.get(req.userId) || null;
   // Controleer verloopdatum
   if (sub && sub.expires_at && sub.expires_at < Math.floor(Date.now() / 1000)) {
     db.db.prepare("UPDATE subscriptions SET status='expired' WHERE id=?").run(sub.id);
-    return res.render('dashboard', { user, sub: null });
+    sub = null;
   }
-  res.render('dashboard', { user, sub: sub || null });
+  const t = res.locals.t;
+  const planName = sub ? t('plan_' + sub.plan + '_name') : '';
+  const locale = { nl: 'nl-NL', en: 'en-GB', de: 'de-DE', fr: 'fr-FR', es: 'es-ES', tr: 'tr-TR', ar: 'ar' }[res.locals.lang] || 'en-GB';
+  res.render('dashboard', {
+    user,
+    sub,
+    userName: user.name,
+    hasSub: !!sub,
+    noSub: !sub,
+    licenseKey: sub ? sub.license_key : '',
+    subPlanLabel: planName,
+    subPlanFull: sub ? 'AM IPTV — ' + planName : '',
+    subExpires: sub
+      ? (sub.expires_at ? new Date(sub.expires_at * 1000).toLocaleDateString(locale) : '∞')
+      : ''
+  });
 });
 
 /* ======================================================

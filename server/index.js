@@ -60,7 +60,8 @@ function render(tmpl, data) {
 app.use((req, res, next) => {
   const origRender = res.render.bind(res);
   res.render = (view, opts) => {
-    opts = opts || {};
+    // Vertalingen als {{ key }} beschikbaar maken; expliciete opts gaan voor
+    opts = Object.assign({}, res.locals.strings || {}, opts || {});
     opts.t = res.locals.t || (k => k);
     opts.lang = res.locals.lang || 'en';
     opts.render = render;

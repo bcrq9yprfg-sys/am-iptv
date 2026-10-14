@@ -30,6 +30,7 @@ function middleware(req, res, next) {
   const lang = detect(req);
   const strings = load(lang);
   res.locals.lang = lang;
+  res.locals.strings = strings;
   res.locals.t = (key, vars) => {
     let s = strings[key] || key;
     if (vars) Object.keys(vars).forEach(k => { s = s.replace('{' + k + '}', vars[k]); });
