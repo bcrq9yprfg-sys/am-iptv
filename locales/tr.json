@@ -95,6 +95,8 @@
   "dashboard_license": "Lisans kodunuz",
   "dashboard_copy": "Kopyala",
   "dashboard_copied": "Kopyalandı!",
+  "dashboard_manage": "Aboneliği yönet / iptal et",
+  "dashboard_manage_none": "Bu plan otomatik olarak yenilenmez.",
   "dashboard_install": "Kurulum talimatları",
   "dashboard_no_sub": "Henüz aktif bir aboneliğiniz yok. Başlamak için aşağıdan bir plan seçin.",
 

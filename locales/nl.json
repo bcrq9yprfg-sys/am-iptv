@@ -95,6 +95,8 @@
   "dashboard_license": "Jouw licentiecode",
   "dashboard_copy": "Kopieer",
   "dashboard_copied": "Gekopieerd!",
+  "dashboard_manage": "Abonnement beheren / opzeggen",
+  "dashboard_manage_none": "Dit abonnement heeft geen automatische verlenging.",
   "dashboard_install": "Installatie-instructies",
   "dashboard_no_sub": "Je hebt nog geen actief abonnement. Kies hieronder een plan om te starten.",
 

@@ -60,6 +60,13 @@
   </div>
   {{/ if }}
 
+  {{# if canManage }}
+  <div class="dash-card manage-block" style="margin-top:1.25rem">
+    <button id="manage-btn" class="btn btn-outline btn-sm">{{ dashboard_manage }}</button>
+    <span id="manage-msg" class="hidden" style="margin-left:.75rem;opacity:.8"></span>
+  </div>
+  {{/ if }}
+
   {{# if noSub }}
   <!-- GEEN ABONNEMENT -->
   <div class="dash-card dash-no-sub">
@@ -95,6 +102,20 @@
 
 <script src="/js/main.js"></script>
 <script>
+var manageBtn = document.getElementById('manage-btn');
+if (manageBtn) manageBtn.addEventListener('click', function () {
+  var msg = document.getElementById('manage-msg');
+  manageBtn.disabled = true;
+  fetch('/billing/portal', { method: 'POST' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.url) { window.location.href = d.url; return; }
+      manageBtn.disabled = false;
+      if (msg) { msg.textContent = d.error || 'Fout'; msg.classList.remove('hidden'); }
+    })
+    .catch(function () { manageBtn.disabled = false; });
+});
+
 function copyLic() {
   var code = document.getElementById('lic').innerText;
   navigator.clipboard.writeText(code).then(function() {

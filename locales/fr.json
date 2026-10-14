@@ -95,6 +95,8 @@
   "dashboard_license": "Votre clé de licence",
   "dashboard_copy": "Copier",
   "dashboard_copied": "Copié !",
+  "dashboard_manage": "Gérer / résilier l'abonnement",
+  "dashboard_manage_none": "Cette formule ne se renouvelle pas automatiquement.",
   "dashboard_install": "Instructions d'installation",
   "dashboard_no_sub": "Vous n'avez pas encore d'abonnement actif. Choisissez un plan ci-dessous.",
 

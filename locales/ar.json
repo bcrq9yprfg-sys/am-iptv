@@ -95,6 +95,8 @@
   "dashboard_license": "رمز الترخيص",
   "dashboard_copy": "نسخ",
   "dashboard_copied": "تم النسخ!",
+  "dashboard_manage": "إدارة / إلغاء الاشتراك",
+  "dashboard_manage_none": "هذه الخطة لا تتجدد تلقائيًا.",
   "dashboard_install": "تعليمات التثبيت",
   "dashboard_no_sub": "ليس لديك اشتراك نشط بعد. اختر خطة أدناه للبدء.",
 

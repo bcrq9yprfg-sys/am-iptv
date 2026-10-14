@@ -95,6 +95,8 @@
   "dashboard_license": "Dein Lizenzschlüssel",
   "dashboard_copy": "Kopieren",
   "dashboard_copied": "Kopiert!",
+  "dashboard_manage": "Abo verwalten / kündigen",
+  "dashboard_manage_none": "Dieser Plan verlängert sich nicht automatisch.",
   "dashboard_install": "Installationsanleitung",
   "dashboard_no_sub": "Du hast noch kein aktives Abonnement. Wähle unten einen Plan aus.",
 

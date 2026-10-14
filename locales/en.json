@@ -95,6 +95,8 @@
   "dashboard_license": "Your license key",
   "dashboard_copy": "Copy",
   "dashboard_copied": "Copied!",
+  "dashboard_manage": "Manage / cancel subscription",
+  "dashboard_manage_none": "This plan does not renew automatically.",
   "dashboard_install": "Installation instructions",
   "dashboard_no_sub": "You don't have an active subscription yet. Choose a plan below to get started.",
 

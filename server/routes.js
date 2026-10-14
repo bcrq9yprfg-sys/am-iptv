@@ -102,6 +102,7 @@ router.get('/dashboard', requireAuth, (req, res) => {
     sub,
     userName: user.name,
     hasSub: !!sub,
+    canManage: !!(sub && sub.stripe_sub_id),
     noSub: !sub,
     licenseKey: sub ? sub.license_key : '',
     subPlanLabel: planName,
@@ -137,6 +138,25 @@ router.post('/checkout', requireAuthApi, async (req, res) => {
   } catch (err) {
     console.error('Stripe checkout error:', err.message);
     res.status(500).json({ error: 'Betaling aanmaken mislukt: ' + err.message });
+  }
+});
+
+/* Stripe Customer Portal — opzeggen, betaalmethode wijzigen, facturen */
+router.post('/billing/portal', requireAuthApi, async (req, res) => {
+  try {
+    const sub = db.getActiveSub.get(req.userId);
+    if (!sub || !sub.stripe_sub_id) {
+      return res.status(400).json({ error: res.locals.t('dashboard_manage_none') });
+    }
+    const stripeSub = await stripe.subscriptions.retrieve(sub.stripe_sub_id);
+    const portal = await stripe.billingPortal.sessions.create({
+      customer: stripeSub.customer,
+      return_url: BASE_URL + '/dashboard'
+    });
+    res.json({ url: portal.url });
+  } catch (err) {
+    console.error('Stripe portal error:', err.message);
+    res.status(500).json({ error: 'Portal openen mislukt' });
   }
 });
 
