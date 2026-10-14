@@ -1,5 +1,5 @@
 /* AM IPTV — Express server */
-require('dotenv').config();
+try { require('dotenv').config(); } catch (_) { /* dotenv optioneel; Railway levert env vars */ }
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
