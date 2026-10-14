@@ -40,6 +40,18 @@ db.exec(`
     id          TEXT PRIMARY KEY,
     processed   INTEGER NOT NULL DEFAULT (unixepoch())
   );
+
+  CREATE TABLE IF NOT EXISTS pair_sessions (
+    code        TEXT PRIMARY KEY,
+    type        TEXT,
+    m3u_url     TEXT,
+    xtream_host TEXT,
+    xtream_user TEXT,
+    xtream_pass TEXT,
+    created_at  INTEGER NOT NULL DEFAULT (unixepoch()),
+    expires_at  INTEGER NOT NULL,
+    used        INTEGER NOT NULL DEFAULT 0
+  );
 `);
 
 /* ---------- Users ---------- */
@@ -77,11 +89,22 @@ function expiresAt(plan) {
   return null; // unlimited = geen verloopdatum
 }
 
+/* ---------- Pair sessions ---------- */
+const createPair = db.prepare(
+  `INSERT INTO pair_sessions (code, expires_at) VALUES (?, ?)`
+);
+const getPair = db.prepare('SELECT * FROM pair_sessions WHERE code = ?');
+const submitPair = db.prepare(
+  `UPDATE pair_sessions SET type=?, m3u_url=?, xtream_host=?, xtream_user=?, xtream_pass=?, used=1
+   WHERE code=? AND used=0 AND expires_at > unixepoch()`
+);
+
 module.exports = {
   db,
   getUser, getUserById, createUser,
   getActiveSub, getSubByLicense, createSub, updateSubStatus,
   eventSeen, markEvent, expiresAt,
+  createPair, getPair, submitPair,
   newId: uuidv4,
   newLicense: () => uuidv4().replace(/-/g, '').toUpperCase().slice(0, 20)
 };

@@ -204,4 +204,75 @@ router.get('/api/license/:key', (req, res) => {
   });
 });
 
+/* ======================================================
+   QR PAIRING — TV-app koppelen via telefoon
+   ====================================================== */
+
+// TV roept dit aan: genereert een 6-karakter code en geeft terug
+router.post('/api/pair', (req, res) => {
+  const code = Math.random().toString(36).slice(2, 8).toUpperCase(); // bv. "X3K9QZ"
+  const expiresAt = Math.floor(Date.now() / 1000) + 600; // 10 minuten geldig
+  db.createPair.run(code, expiresAt);
+  const pairUrl = `${BASE_URL}/pair/${code}`;
+  res.json({ code, url: pairUrl });
+});
+
+// TV pollt dit elke 2 seconden
+router.get('/api/pair/:code/result', (req, res) => {
+  const session = db.getPair.get(req.params.code.toUpperCase());
+  if (!session) return res.status(404).json({ error: 'Onbekende code' });
+  if (session.expires_at < Math.floor(Date.now() / 1000)) {
+    return res.json({ status: 'expired' });
+  }
+  if (!session.used) return res.json({ status: 'pending' });
+  res.json({
+    status: 'done',
+    type: session.type,
+    m3u_url: session.m3u_url,
+    xtream_host: session.xtream_host,
+    xtream_user: session.xtream_user,
+    xtream_pass: session.xtream_pass
+  });
+});
+
+// Telefoon stuurt dit in (via pair.html formulier)
+router.post('/api/pair/:code/submit', (req, res) => {
+  const code = req.params.code.toUpperCase();
+  const { type, m3u_url, xtream_host, xtream_user, xtream_pass } = req.body;
+  if (!type || !['m3u', 'xtream'].includes(type)) {
+    return res.status(400).json({ error: 'Ongeldig type' });
+  }
+  if (type === 'm3u' && !m3u_url) {
+    return res.status(400).json({ error: 'M3U URL vereist' });
+  }
+  if (type === 'xtream' && (!xtream_host || !xtream_user || !xtream_pass)) {
+    return res.status(400).json({ error: 'Alle Xtream-velden vereist' });
+  }
+  const changes = db.submitPair.run(
+    type,
+    m3u_url || null,
+    xtream_host || null,
+    xtream_user || null,
+    xtream_pass || null,
+    code
+  );
+  if (changes.changes === 0) {
+    return res.status(410).json({ error: 'Code verlopen of al gebruikt' });
+  }
+  res.json({ ok: true });
+});
+
+// Mobiele pagina — GET /pair/:code
+router.get('/pair/:code', (req, res) => {
+  const code = req.params.code.toUpperCase();
+  const session = db.getPair.get(code);
+  if (!session || session.expires_at < Math.floor(Date.now() / 1000)) {
+    return res.send(`<!doctype html><html><body style="font-family:sans-serif;text-align:center;padding:40px">
+      <h2>❌ Code verlopen</h2>
+      <p>Ga terug naar je TV en scan de nieuwe QR-code.</p>
+    </body></html>`);
+  }
+  res.render('pair', { code });
+});
+
 module.exports = router;
