@@ -244,6 +244,10 @@ router.get('/api/license/:key', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Cache-Control', 'no-store');
   const key = String(req.params.key || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  // Vaste testcodes voor Samsung-keuring (Railway-variabele REVIEW_LICENSES, komma-gescheiden)
+  const review = String(process.env.REVIEW_LICENSES || '').toUpperCase().split(',')
+    .map(k => k.replace(/[^A-Z0-9]/g, '')).filter(k => k.length >= 8);
+  if (review.includes(key)) return res.json({ valid: true, plan: 'unlimited', expires_at: null });
   const sub = db.getSubByLicense.get(key);
   if (!sub) return res.json({ valid: false });
   // Controleer verloopdatum
