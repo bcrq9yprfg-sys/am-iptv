@@ -1,0 +1,207 @@
+/* Alle routes: landingspagina, auth, dashboard, Stripe, webhook, licentie-API */
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const router = express.Router();
+const db = require('./db');
+const { sign, requireAuth, requireAuthApi } = require('./auth');
+
+const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || '';
+const STRIPE_WEBHOOK = process.env.STRIPE_WEBHOOK_SECRET || '';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+
+const stripe = require('stripe')(STRIPE_KEY);
+
+/* Prijzen — zet hier je echte Stripe Price IDs in via env */
+const PRICES = {
+  '6m':       process.env.STRIPE_PRICE_6M       || 'price_6m_placeholder',
+  '1y':       process.env.STRIPE_PRICE_1Y       || 'price_1y_placeholder',
+  'unlimited': process.env.STRIPE_PRICE_UNLIMITED || 'price_unlimited_placeholder'
+};
+
+/* ======================================================
+   LANDINGSPAGINA
+   ====================================================== */
+router.get('/', (req, res) => {
+  const user = req.userId ? db.getUserById.get(req.userId) : null;
+  res.render('index', { user });
+});
+
+/* ======================================================
+   TAAL WISSELEN
+   ====================================================== */
+router.get('/lang/:code', (req, res) => {
+  res.cookie('lang', req.params.code, { maxAge: 365 * 24 * 3600 * 1000, httpOnly: false });
+  res.redirect(req.headers.referer || '/');
+});
+
+/* ======================================================
+   REGISTREREN
+   ====================================================== */
+router.get('/register', (req, res) => {
+  if (req.userId) return res.redirect('/dashboard');
+  res.render('register', { error: null });
+});
+
+router.post('/register', async (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) return res.render('register', { error: 'Vul alle velden in' });
+  if (password.length < 8) return res.render('register', { error: res.locals.t('register_weak') });
+  if (db.getUser.get(email)) return res.render('register', { error: res.locals.t('register_exists') });
+  const hash = await bcrypt.hash(password, 10);
+  const id = db.newId();
+  db.createUser.run(id, email.toLowerCase().trim(), hash, name.trim(), res.locals.lang);
+  const token = sign({ sub: id });
+  res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000 });
+  res.redirect('/dashboard');
+});
+
+/* ======================================================
+   INLOGGEN
+   ====================================================== */
+router.get('/login', (req, res) => {
+  if (req.userId) return res.redirect('/dashboard');
+  res.render('login', { error: null });
+});
+
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const user = db.getUser.get((email || '').toLowerCase().trim());
+  if (!user || !(await bcrypt.compare(password || '', user.password))) {
+    return res.render('login', { error: res.locals.t('login_wrong') });
+  }
+  const token = sign({ sub: user.id });
+  res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 3600 * 1000 });
+  res.redirect('/dashboard');
+});
+
+/* ======================================================
+   UITLOGGEN
+   ====================================================== */
+router.get('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/');
+});
+
+/* ======================================================
+   DASHBOARD
+   ====================================================== */
+router.get('/dashboard', requireAuth, (req, res) => {
+  const user = db.getUserById.get(req.userId);
+  if (!user) return res.redirect('/login');
+  const sub = db.getActiveSub.get(req.userId);
+  // Controleer verloopdatum
+  if (sub && sub.expires_at && sub.expires_at < Math.floor(Date.now() / 1000)) {
+    db.db.prepare("UPDATE subscriptions SET status='expired' WHERE id=?").run(sub.id);
+    return res.render('dashboard', { user, sub: null });
+  }
+  res.render('dashboard', { user, sub: sub || null });
+});
+
+/* ======================================================
+   CHECKOUT (Stripe)
+   ====================================================== */
+router.post('/checkout', requireAuthApi, async (req, res) => {
+  const { plan } = req.body;
+  if (!PRICES[plan]) return res.status(400).json({ error: 'Ongeldig plan' });
+  const user = db.getUserById.get(req.userId);
+  if (!user) return res.status(401).json({ error: 'Niet ingelogd' });
+
+  try {
+    const isRecurring = plan !== 'unlimited';
+    const session = await stripe.checkout.sessions.create({
+      mode: isRecurring ? 'subscription' : 'payment',
+      customer_email: user.email,
+      line_items: [{ price: PRICES[plan], quantity: 1 }],
+      metadata: { user_id: user.id, plan },
+      success_url: BASE_URL + '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: BASE_URL + '/dashboard',
+      allow_promotion_codes: true,
+      billing_address_collection: 'auto'
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('Stripe checkout error:', err.message);
+    res.status(500).json({ error: 'Betaling aanmaken mislukt: ' + err.message });
+  }
+});
+
+router.get('/checkout/success', requireAuth, async (req, res) => {
+  // Stripe webhook verwerkt de betaling; hier tonen we een bevestiging
+  res.render('success');
+});
+
+/* ======================================================
+   STRIPE WEBHOOK
+   ====================================================== */
+router.post('/webhook/stripe', express.raw({ type: 'application/json' }), (req, res) => {
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], STRIPE_WEBHOOK);
+  } catch (err) {
+    console.error('Webhook fout:', err.message);
+    return res.status(400).send('Webhook fout: ' + err.message);
+  }
+
+  // Idempotentie
+  if (db.eventSeen.get(event.id)) return res.json({ ok: true });
+  db.markEvent.run(event.id);
+
+  const handlePaid = (meta, stripeSubId) => {
+    if (!meta || !meta.user_id || !meta.plan) return;
+    const licenseKey = db.newLicense();
+    db.createSub.run(
+      db.newId(), meta.user_id, meta.plan, licenseKey,
+      stripeSubId || null, db.expiresAt(meta.plan)
+    );
+    console.log('Nieuw abonnement aangemaakt voor user', meta.user_id, 'plan', meta.plan);
+  };
+
+  switch (event.type) {
+    case 'checkout.session.completed': {
+      const s = event.data.object;
+      if (s.payment_status === 'paid') handlePaid(s.metadata, s.subscription);
+      break;
+    }
+    case 'invoice.paid': {
+      // Verlenging bij recurring abonnement
+      const inv = event.data.object;
+      const sub = inv.subscription;
+      if (sub) {
+        const existing = db.db.prepare(
+          "SELECT * FROM subscriptions WHERE stripe_sub_id=? AND status='active'"
+        ).get(sub);
+        if (!existing && inv.metadata) handlePaid(inv.metadata, sub);
+      }
+      break;
+    }
+    case 'customer.subscription.deleted': {
+      const sub = event.data.object;
+      db.updateSubStatus.run('cancelled', sub.id);
+      break;
+    }
+  }
+
+  res.json({ ok: true });
+});
+
+/* ======================================================
+   LICENTIE API — voor de TVPlayer-app zelf
+   GET /api/license/:key → { valid, plan, expires_at }
+   ====================================================== */
+router.get('/api/license/:key', (req, res) => {
+  const sub = db.getSubByLicense.get(req.params.key);
+  if (!sub) return res.json({ valid: false });
+  // Controleer verloopdatum
+  if (sub.expires_at && sub.expires_at < Math.floor(Date.now() / 1000)) {
+    db.db.prepare("UPDATE subscriptions SET status='expired' WHERE id=?").run(sub.id);
+    return res.json({ valid: false, reason: 'expired' });
+  }
+  res.json({
+    valid: true,
+    plan: sub.plan,
+    expires_at: sub.expires_at,
+    email: sub.email
+  });
+});
+
+module.exports = router;

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ dir }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ pageTitle }} — {{ t | raw }}TVPlayer{{ /t }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="{{ bodyClass }}">
+  <nav class="topnav">
+    <a class="brand" href="/">TV<span>Player</span></a>
+    <div class="nav-right">
+      <div class="lang-picker">
+        <button class="lang-btn">🌐</button>
+        <div class="lang-drop">
+          <a href="/lang/nl">🇳🇱 Nederlands</a>
+          <a href="/lang/en">🇬🇧 English</a>
+          <a href="/lang/ar">🇸🇦 العربية</a>
+          <a href="/lang/tr">🇹🇷 Türkçe</a>
+          <a href="/lang/fr">🇫🇷 Français</a>
+          <a href="/lang/de">🇩🇪 Deutsch</a>
+          <a href="/lang/es">🇪🇸 Español</a>
+        </div>
+      </div>
+      {{ navLinks | raw }}
+    </div>
+  </nav>
+  <main>{{ content | raw }}</main>
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>© 2025 TVPlayer. {{ t | raw }}{{ footer_rights }}{{ /t }}</span>
+      <a href="/terms">{{ t | raw }}{{ footer_terms }}{{ /t }}</a>
+      <a href="/privacy">{{ t | raw }}{{ footer_privacy }}{{ /t }}</a>
+    </div>
+  </footer>
+  <script src="/js/main.js"></script>
+</body>
+</html>

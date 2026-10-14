@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ dashboard_title }} — AM IPTV</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="dash-page">
+<nav class="topnav">
+  <a class="brand" href="/"><span class="brand-am">AM</span><span class="brand-dot">·</span><span class="brand-iptv">IPTV</span></a>
+  <div class="nav-right">
+    <span class="nav-name">{{ userName }}</span>
+    <a href="/logout" class="btn btn-ghost">{{ nav_logout }}</a>
+  </div>
+</nav>
+
+<div class="dash-wrap">
+  <div class="dash-header">
+    <h1>{{ dashboard_welcome }}</h1>
+  </div>
+
+  {{# if hasSub }}
+  <!-- ACTIEF ABONNEMENT -->
+  <div class="dash-card dash-sub">
+    <div class="sub-plan-badge">{{ subPlanLabel }}</div>
+    <div class="sub-rows">
+      <div class="sub-row">
+        <span class="sub-label">{{ dashboard_plan }}</span>
+        <span class="sub-val">{{ subPlanFull }}</span>
+      </div>
+      <div class="sub-row">
+        <span class="sub-label">{{ dashboard_status }}</span>
+        <span class="sub-val sub-active">● {{ dashboard_active }}</span>
+      </div>
+      <div class="sub-row">
+        <span class="sub-label">{{ dashboard_expires }}</span>
+        <span class="sub-val">{{ subExpires }}</span>
+      </div>
+    </div>
+
+    <div class="license-block">
+      <div class="license-label">{{ dashboard_license }}</div>
+      <div class="license-row">
+        <code id="lic" class="license-code">{{ licenseKey }}</code>
+        <button class="btn btn-outline btn-sm" onclick="copyLic()">{{ dashboard_copy }}</button>
+      </div>
+    </div>
+
+    <div class="install-block">
+      <h3>{{ dashboard_install }}</h3>
+      <ol class="install-steps">
+        <li>Download de AM IPTV-app op je Samsung TV via de installatiehandleiding in je e-mail.</li>
+        <li>Open de app → Instellingen → Licentiecode invoeren.</li>
+        <li>Voer de code hierboven in en druk op Bevestigen.</li>
+        <li>Voeg je M3U-link of Xtream-gegevens toe en geniet van streamen!</li>
+      </ol>
+    </div>
+  </div>
+  {{/ if }}
+
+  {{# if noSub }}
+  <!-- GEEN ABONNEMENT -->
+  <div class="dash-card dash-no-sub">
+    <div class="no-sub-icon">📦</div>
+    <p>{{ dashboard_no_sub }}</p>
+    <div class="plans-mini">
+      <button class="btn btn-outline plan-mini-btn" data-plan="6m">
+        <strong>6 Maanden</strong><br>€ 9,99
+      </button>
+      <button class="btn btn-primary plan-mini-btn" data-plan="1y">
+        <strong>1 Jaar ⭐</strong><br>€ 16,99
+      </button>
+      <button class="btn btn-gold plan-mini-btn" data-plan="unlimited">
+        <strong>Onbeperkt</strong><br>€ 29,99
+      </button>
+    </div>
+    <p id="checkout-msg" class="checkout-msg hidden"></p>
+  </div>
+  {{/ if }}
+
+  <!-- SUPPORT -->
+  <div class="dash-card dash-support">
+    <h3>{{ support_title }}</h3>
+    <p>{{ support_text }}</p>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>© 2025 <strong>AM IPTV</strong>. {{ footer_rights }}</span>
+  </div>
+</footer>
+
+<script src="/js/main.js"></script>
+<script>
+function copyLic() {
+  var code = document.getElementById('lic').innerText;
+  navigator.clipboard.writeText(code).then(function() {
+    var btn = document.querySelector('[onclick="copyLic()"]');
+    btn.textContent = '{{ dashboard_copied }}';
+    setTimeout(function() { btn.textContent = '{{ dashboard_copy }}'; }, 2000);
+  });
+}
+</script>
+</body>
+</html>

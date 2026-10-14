@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AM IPTV — {{ hero_tagline }}</title>
+<meta name="description" content="Premium IPTV voor Samsung TV. Kies een abonnement en stream direct.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <a class="brand" href="/"><span class="brand-am">AM</span><span class="brand-dot">·</span><span class="brand-iptv">IPTV</span></a>
+  <div class="nav-right">
+    <div class="lang-picker">
+      <button class="lang-btn">🌐 {{ langName }}</button>
+      <div class="lang-drop">
+        <a href="/lang/nl">🇳🇱 Nederlands</a>
+        <a href="/lang/en">🇬🇧 English</a>
+        <a href="/lang/ar">🇸🇦 العربية</a>
+        <a href="/lang/tr">🇹🇷 Türkçe</a>
+        <a href="/lang/fr">🇫🇷 Français</a>
+        <a href="/lang/de">🇩🇪 Deutsch</a>
+        <a href="/lang/es">🇪🇸 Español</a>
+      </div>
+    </div>
+    <a href="/login" class="btn btn-ghost">{{ nav_login }}</a>
+    <a href="#plans" class="btn btn-primary">{{ nav_start }}</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="particles"></canvas>
+
+  <div class="hero-inner">
+    <div class="hero-eyebrow">AM IPTV — Premium Streaming</div>
+    <h1 class="hero-title">
+      Stream alles op<br>
+      je <span class="grad">Samsung TV</span>
+    </h1>
+    <p class="hero-sub">{{ hero_sub }}</p>
+    <div class="hero-ctas">
+      <a href="#plans" class="btn btn-gold btn-xl">{{ hero_cta_primary }}</a>
+      <a href="#features" class="btn btn-outline btn-xl">{{ hero_cta_secondary }}</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">24/7</div>
+        <div class="stat-label">{{ stat_support }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">7+</div>
+        <div class="stat-label">{{ stat_languages }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">1-klik</div>
+        <div class="stat-label">{{ stat_setup }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="tv-wrap">
+      <div class="tv-glow"></div>
+      <div class="tv-frame">
+        <div class="tv-screen">
+          <div class="mock-ui">
+            <div class="mock-topbar">
+              <div class="mock-logo"></div>
+              <div class="mock-nav">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            <div class="mock-hero-area">
+              <div class="mock-poster"></div>
+              <div class="mock-info">
+                <div class="mock-title-bar"></div>
+                <div class="mock-meta-bar"></div>
+                <div class="mock-btns">
+                  <div class="mock-btn"></div>
+                  <div class="mock-btn"></div>
+                </div>
+              </div>
+            </div>
+            <div class="mock-rows-area">
+              <div class="mock-row-label"></div>
+              <div class="mock-cards">
+                <div class="mock-card"></div>
+                <div class="mock-card"></div>
+                <div class="mock-card"></div>
+                <div class="mock-card"></div>
+                <div class="mock-card"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tv-chin">
+          <div class="tv-chin-logo">▶</div>
+        </div>
+      </div>
+      <div class="tv-stand-base">
+        <div class="tv-stand-neck"></div>
+      </div>
+      <div class="tv-stand-foot"></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPAT STRIP -->
+<div class="compat-strip">
+  <div class="compat-inner">
+    <div class="compat-item"><span class="ci">📺</span> Samsung Smart TV</div>
+    <div class="compat-item"><span class="ci">🎬</span> M3U Afspeellijsten</div>
+    <div class="compat-item"><span class="ci">📡</span> Xtream Codes</div>
+    <div class="compat-item"><span class="ci">🌍</span> Alle providers</div>
+    <div class="compat-item"><span class="ci">💬</span> Ondertiteling</div>
+    <div class="compat-item"><span class="ci">⚡</span> Snel & stabiel</div>
+    <!-- Herhaling voor naadloze marquee -->
+    <div class="compat-item"><span class="ci">📺</span> Samsung Smart TV</div>
+    <div class="compat-item"><span class="ci">🎬</span> M3U Afspeellijsten</div>
+    <div class="compat-item"><span class="ci">📡</span> Xtream Codes</div>
+    <div class="compat-item"><span class="ci">🌍</span> Alle providers</div>
+    <div class="compat-item"><span class="ci">💬</span> Ondertiteling</div>
+    <div class="compat-item"><span class="ci">⚡</span> Snel & stabiel</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-label">{{ features_label }}</div>
+  <h2 class="section-title">{{ features_title }}</h2>
+  <p class="section-sub">{{ features_sub }}</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="fi-wrap">📺</div>
+      <div class="fc-title">{{ feat_samsung_title }}</div>
+      <div class="fc-desc">{{ feat_samsung_desc }}</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi-wrap">🔑</div>
+      <div class="fc-title">{{ feat_license_title }}</div>
+      <div class="fc-desc">{{ feat_license_desc }}</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi-wrap">💬</div>
+      <div class="fc-title">{{ feat_sub_title }}</div>
+      <div class="fc-desc">{{ feat_sub_desc }}</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi-wrap">📡</div>
+      <div class="fc-title">{{ feat_xtream_title }}</div>
+      <div class="fc-desc">{{ feat_xtream_desc }}</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi-wrap">⚡</div>
+      <div class="fc-title">{{ feat_speed_title }}</div>
+      <div class="fc-desc">{{ feat_speed_desc }}</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi-wrap">🌍</div>
+      <div class="fc-title">{{ feat_lang_title }}</div>
+      <div class="fc-desc">{{ feat_lang_desc }}</div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section class="plans" id="plans">
+  <div class="section-label">{{ plans_label }}</div>
+  <h2 class="section-title">{{ plans_title }}</h2>
+  <p class="section-sub">{{ plans_sub }}</p>
+  <div class="plans-grid">
+
+    <!-- 6 MAANDEN -->
+    <div class="plan-card anim">
+      <div class="plan-name">{{ plan_6m_name }}</div>
+      <div class="plan-price"><span class="cur">€</span>9<span style="font-size:1.4rem">,99</span></div>
+      <div class="plan-sub">{{ plan_6m_period }}</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="chk">✔</span> {{ plan_feat_license }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_m3u }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_xtream }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_sub }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_support }}</li>
+      </ul>
+      <div class="plan-btn">
+        <button class="btn btn-outline btn-full plan-btn" data-plan="6m">{{ plan_cta }}</button>
+      </div>
+    </div>
+
+    <!-- 1 JAAR — FEATURED -->
+    <div class="plan-card plan-featured anim">
+      <div class="plan-badge">{{ plan_popular }}</div>
+      <div class="plan-name">{{ plan_1y_name }}</div>
+      <div class="plan-price"><span class="cur">€</span>16<span style="font-size:1.4rem">,99</span></div>
+      <div class="plan-sub">{{ plan_1y_period }}</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li class="bold-feat"><span class="chk">✔</span> {{ plan_feat_license }}</li>
+        <li class="bold-feat"><span class="chk">✔</span> {{ plan_feat_m3u }}</li>
+        <li class="bold-feat"><span class="chk">✔</span> {{ plan_feat_xtream }}</li>
+        <li class="bold-feat"><span class="chk">✔</span> {{ plan_feat_sub }}</li>
+        <li class="bold-feat"><span class="chk">✔</span> {{ plan_feat_support }}</li>
+        <li class="bold-feat"><span class="chk">✔</span> {{ plan_feat_priority }}</li>
+      </ul>
+      <div class="plan-btn">
+        <button class="btn btn-primary btn-full plan-btn" data-plan="1y">{{ plan_cta }}</button>
+      </div>
+    </div>
+
+    <!-- UNLIMITED -->
+    <div class="plan-card anim">
+      <div class="plan-name">{{ plan_unlimited_name }}</div>
+      <div class="plan-price"><span class="cur">€</span>29<span style="font-size:1.4rem">,99</span></div>
+      <div class="plan-sub">{{ plan_unlimited_period }}</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="chk">✔</span> {{ plan_feat_license }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_m3u }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_xtream }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_sub }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_support }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_priority }}</li>
+        <li><span style="color:var(--gold)">★</span> {{ plan_feat_lifetime }}</li>
+      </ul>
+      <div class="plan-btn">
+        <button class="btn btn-gold btn-full plan-btn" data-plan="unlimited">{{ plan_cta }}</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="section-label">Reviews</div>
+  <h2 class="section-title">{{ testi_title }}</h2>
+  <div class="testi-grid">
+    <div class="testi-card anim">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"Eindelijk een IPTV-app die gewoon werkt op mijn Samsung. Eenvoudig installeren en direct streamen. Fantastisch!"</div>
+      <div class="testi-author">Mohammed A.</div>
+      <div class="testi-country">🇳🇱 Nederland</div>
+    </div>
+    <div class="testi-card anim">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"The subtitle support is amazing. Works perfectly with my IPTV provider. Best €17 I've spent this year."</div>
+      <div class="testi-author">James K.</div>
+      <div class="testi-country">🇬🇧 United Kingdom</div>
+    </div>
+    <div class="testi-card anim">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"التطبيق رائع جداً، يعمل بشكل مثالي على تلفزيوني Samsung. الدعم سريع ومتجاوب."</div>
+      <div class="testi-author">Khalid M.</div>
+      <div class="testi-country">🇸🇦 Saudi-Arabië</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="section-label">FAQ</div>
+  <h2 class="section-title">{{ faq_title }}</h2>
+  <div class="faq-list">
+    <details class="faq-item">
+      <summary>{{ faq_q1 }}</summary>
+      <p>{{ faq_a1 }}</p>
+    </details>
+    <details class="faq-item">
+      <summary>{{ faq_q2 }}</summary>
+      <p>{{ faq_a2 }}</p>
+    </details>
+    <details class="faq-item">
+      <summary>{{ faq_q3 }}</summary>
+      <p>{{ faq_a3 }}</p>
+    </details>
+    <details class="faq-item">
+      <summary>{{ faq_q4 }}</summary>
+      <p>{{ faq_a4 }}</p>
+    </details>
+    <details class="faq-item">
+      <summary>{{ faq_q5 }}</summary>
+      <p>{{ faq_a5 }}</p>
+    </details>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <h2>{{ cta_title }}</h2>
+  <p>{{ cta_sub }}</p>
+  <div class="cta-btns">
+    <a href="#plans" class="btn btn-gold btn-xl">{{ cta_btn }}</a>
+    <a href="mailto:support@amiptv.tv" class="btn btn-outline btn-xl">{{ nav_support }}</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <span>© 2025 <strong>AM IPTV</strong>. {{ footer_rights }}</span>
+    <a href="mailto:support@amiptv.tv">support@amiptv.tv</a>
+    <a href="/login">{{ nav_login }}</a>
+    <div class="lang-picker" style="margin-left:auto">
+      <button class="lang-btn">🌐 {{ langName }}</button>
+      <div class="lang-drop">
+        <a href="/lang/nl">🇳🇱 Nederlands</a>
+        <a href="/lang/en">🇬🇧 English</a>
+        <a href="/lang/ar">🇸🇦 العربية</a>
+        <a href="/lang/tr">🇹🇷 Türkçe</a>
+        <a href="/lang/fr">🇫🇷 Français</a>
+        <a href="/lang/de">🇩🇪 Deutsch</a>
+        <a href="/lang/es">🇪🇸 Español</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

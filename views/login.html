@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ login_title }} — AM IPTV</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="auth-page">
+<nav class="topnav">
+  <a class="brand" href="/"><span class="brand-am">AM</span><span class="brand-dot">·</span><span class="brand-iptv">IPTV</span></a>
+</nav>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1>{{ login_title }}</h1>
+    {{# if error }}
+    <div class="alert alert-error">{{ error }}</div>
+    {{/ if }}
+    <form method="POST" action="/login">
+      <label>{{ login_email }}<input type="email" name="email" required autofocus></label>
+      <label>{{ login_pass }}<input type="password" name="password" required></label>
+      <button type="submit" class="btn btn-primary btn-full">{{ login_btn }}</button>
+    </form>
+    <p class="auth-footer">{{ login_no_account }} <a href="/register">{{ login_register }}</a></p>
+  </div>
+</div>
+</body>
+</html>
