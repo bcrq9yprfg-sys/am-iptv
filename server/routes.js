@@ -185,7 +185,18 @@ router.post('/webhook/stripe', express.raw({ type: 'application/json' }), (req, 
         const existing = db.db.prepare(
           "SELECT * FROM subscriptions WHERE stripe_sub_id=? AND status='active'"
         ).get(sub);
-        if (!existing && inv.metadata) handlePaid(inv.metadata, sub);
+        if (existing) {
+          // Automatische verlenging: vervaldatum doorschuiven naar einde nieuwe periode (+3 dagen marge)
+          const line = inv.lines && inv.lines.data && inv.lines.data[0];
+          const periodEnd = line && line.period && line.period.end;
+          const newExpiry = periodEnd ? periodEnd + 3 * 86400 : db.expiresAt(existing.plan);
+          if (newExpiry && (!existing.expires_at || newExpiry > existing.expires_at)) {
+            db.db.prepare('UPDATE subscriptions SET expires_at=? WHERE id=?').run(newExpiry, existing.id);
+            console.log('Abonnement verlengd', existing.id, 'tot', new Date(newExpiry * 1000).toISOString());
+          }
+        } else if (inv.metadata) {
+          handlePaid(inv.metadata, sub);
+        }
       }
       break;
     }
