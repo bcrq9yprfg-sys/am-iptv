@@ -41,6 +41,29 @@ db.exec(`
     processed   INTEGER NOT NULL DEFAULT (unixepoch())
   );
 
+  CREATE TABLE IF NOT EXISTS license_devices (
+    license_key TEXT NOT NULL,
+    device      TEXT NOT NULL,
+    first_seen  INTEGER NOT NULL DEFAULT (unixepoch()),
+    last_seen   INTEGER NOT NULL DEFAULT (unixepoch()),
+    checks      INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (license_key, device)
+  );
+
+  CREATE TABLE IF NOT EXISTS watch_events (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts          INTEGER NOT NULL DEFAULT (unixepoch()),
+    device      TEXT NOT NULL,
+    license_key TEXT,
+    kind        TEXT NOT NULL CHECK(kind IN ('live','movie','series')),
+    title       TEXT NOT NULL,
+    folder      TEXT,
+    season      TEXT,
+    episode     TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_watch_ts ON watch_events(ts);
+  CREATE INDEX IF NOT EXISTS idx_watch_lic ON watch_events(license_key);
+
   CREATE TABLE IF NOT EXISTS trials (
     device      TEXT PRIMARY KEY,
     started_at  INTEGER NOT NULL DEFAULT (unixepoch())
@@ -65,6 +88,18 @@ try { db.exec('ALTER TABLE pair_sessions ADD COLUMN token TEXT'); } catch (_) { 
 /* ---------- Proefperiode (per TV) ---------- */
 const startTrial = db.prepare('INSERT OR IGNORE INTO trials (device) VALUES (?)');
 const getTrial = db.prepare('SELECT * FROM trials WHERE device = ?');
+
+/* ---------- Licentiegebruik per TV ---------- */
+const seenLicense = db.prepare(
+  `INSERT INTO license_devices (license_key, device) VALUES (?, ?)
+   ON CONFLICT(license_key, device) DO UPDATE SET last_seen = unixepoch(), checks = checks + 1`
+);
+
+/* ---------- Kijkactiviteit (alleen met toestemming in de app) ---------- */
+const addWatch = db.prepare(
+  'INSERT INTO watch_events (device, license_key, kind, title, folder, season, episode) VALUES (?, ?, ?, ?, ?, ?, ?)'
+);
+const pruneWatch = db.prepare('DELETE FROM watch_events WHERE ts < unixepoch() - 365 * 86400');
 
 /* ---------- Users ---------- */
 const getUser = db.prepare('SELECT * FROM users WHERE email = ?');
@@ -119,7 +154,7 @@ module.exports = {
   getActiveSub, getSubByLicense, createSub, updateSubStatus,
   eventSeen, markEvent, expiresAt,
   createPair, getPair, submitPair, deletePair, cleanPairs,
-  startTrial, getTrial,
+  startTrial, getTrial, seenLicense, addWatch, pruneWatch,
   newId: uuidv4,
   newLicense: () => uuidv4().replace(/-/g, '').toUpperCase().slice(0, 20)
 };

@@ -247,8 +247,13 @@ router.get('/api/license/:key', (req, res) => {
   // Vaste testcodes voor Samsung-keuring (Railway-variabele REVIEW_LICENSES, komma-gescheiden)
   const review = String(process.env.REVIEW_LICENSES || '').toUpperCase().split(',')
     .map(k => k.replace(/[^A-Z0-9]/g, '')).filter(k => k.length >= 8);
-  if (review.includes(key)) return res.json({ valid: true, plan: 'unlimited', expires_at: null });
+  const device = String(req.query.d || '').replace(/[^A-Za-z0-9._-]/g, '').slice(0, 128);
+  if (review.includes(key)) {
+    if (device) db.seenLicense.run(key, device);
+    return res.json({ valid: true, plan: 'unlimited', expires_at: null });
+  }
   const sub = db.getSubByLicense.get(key);
+  if (sub && device) db.seenLicense.run(key, device);
   if (!sub) return res.json({ valid: false });
   // Controleer verloopdatum
   if (sub.expires_at && sub.expires_at < Math.floor(Date.now() / 1000)) {
@@ -278,7 +283,23 @@ function tvCors(req, res, next) {
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 }
-router.use(['/api/pair', '/api/trial'], tvCors);
+router.use(['/api/pair', '/api/trial', '/api/watch'], tvCors);
+
+/* Kijkactiviteit van de TV-app (alleen verstuurd als de kijker toestemming gaf) */
+let watchCount = 0;
+router.post('/api/watch', express.text({ type: 'text/plain', limit: '4kb' }), (req, res) => {
+  let b = req.body || {};
+  if (typeof b === 'string') { try { b = JSON.parse(b); } catch (_) { b = {}; } }
+  const clean = (v, n) => (v == null ? null : String(v).replace(/[\u0000-\u001f]/g, '').trim().slice(0, n) || null);
+  const device = String(b.device || '').replace(/[^A-Za-z0-9._-]/g, '').slice(0, 128);
+  const kind = ['live', 'movie', 'series'].includes(b.kind) ? b.kind : null;
+  const title = clean(b.title, 200);
+  if (device.length < 8 || !kind || !title) return res.status(400).json({ error: 'invalid' });
+  const lic = String(b.license || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 40) || null;
+  db.addWatch.run(device, lic, kind, title, clean(b.folder, 120), clean(b.season, 10), clean(b.episode, 10));
+  if (++watchCount % 500 === 0) db.pruneWatch.run();   // ouder dan 1 jaar opruimen
+  res.json({ ok: true });
+});
 
 /* Proefperiode: 3 dagen per TV, start bij eerste aanroep */
 router.get('/api/trial/:device', (req, res) => {

@@ -98,9 +98,13 @@ app.use((req, res, next) => {
 });
 
 // Rate limiting
-const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
+// TV-routes pollen vaak (QR-koppelen elke 2 s): eigen, ruimere limiet
+const TV_PATHS = /^\/api\/(pair|watch|license|trial)(\/|$)/;
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, skip: req => TV_PATHS.test(req.path) });
+const tvLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 1500 });
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Te veel pogingen, probeer later opnieuw' });
 app.use(limiter);
+app.use(TV_PATHS, tvLimiter);
 app.use('/login', authLimiter);
 app.use('/register', authLimiter);
 
@@ -108,6 +112,7 @@ app.use('/register', authLimiter);
    ROUTES
    ====================================================== */
 app.use('/', require('./routes'));
+app.use('/admin', require('./admin'));
 
 /* ======================================================
    HEALTH CHECK (Railway)
