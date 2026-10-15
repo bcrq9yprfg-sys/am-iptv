@@ -27,7 +27,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS subscriptions (
     id            TEXT PRIMARY KEY,
     user_id       TEXT NOT NULL REFERENCES users(id),
-    plan          TEXT NOT NULL CHECK(plan IN ('6m','1y','unlimited')),
+    plan          TEXT NOT NULL CHECK(plan IN ('1m','6m','1y','unlimited')),
     status        TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','expired','cancelled')),
     license_key   TEXT UNIQUE NOT NULL,
     stripe_sub_id TEXT,
@@ -82,6 +82,21 @@ db.exec(`
   );
 `);
 
+// Migratie: maandplan '1m' toestaan in bestaande databases (CHECK kan niet via ALTER)
+(function () {
+  const row = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='subscriptions'").get();
+  if (!row || row.sql.includes("'1m'")) return;
+  db.pragma('foreign_keys = OFF');
+  db.transaction(() => {
+    db.exec('ALTER TABLE subscriptions RENAME TO subscriptions_old');
+    db.exec(row.sql.replace("CHECK(plan IN ('6m','1y','unlimited'))", "CHECK(plan IN ('1m','6m','1y','unlimited'))"));
+    db.exec('INSERT INTO subscriptions SELECT * FROM subscriptions_old');
+    db.exec('DROP TABLE subscriptions_old');
+  })();
+  db.pragma('foreign_keys = ON');
+  console.log('Migratie: maandplan toegevoegd aan subscriptions');
+})();
+
 // Migratie: geheime sleutel per koppelsessie (bestaande databases)
 try { db.exec('ALTER TABLE pair_sessions ADD COLUMN token TEXT'); } catch (_) { /* bestaat al */ }
 
@@ -131,6 +146,7 @@ const markEvent = db.prepare('INSERT OR IGNORE INTO stripe_events (id) VALUES (?
 
 function expiresAt(plan) {
   const now = Math.floor(Date.now() / 1000);
+  if (plan === '1m')  return now + 60 * 60 * 24 * 31;
   if (plan === '6m')  return now + 60 * 60 * 24 * 183;
   if (plan === '1y')  return now + 60 * 60 * 24 * 366;
   return null; // unlimited = geen verloopdatum

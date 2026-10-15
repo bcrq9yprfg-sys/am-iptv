@@ -273,8 +273,8 @@ body > * { position: relative; z-index: 1; }
    ====================================================== */
 .plans { padding: 5rem 4rem; }
 .plans-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem; max-width: 980px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem; max-width: 1240px; margin: 0 auto;
 }
 .plan-card {
   background: var(--glass); border: 1.5px solid var(--border);

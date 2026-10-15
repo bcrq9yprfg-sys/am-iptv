@@ -174,6 +174,24 @@
   <p class="section-sub">{{ plans_sub }}</p>
   <div class="plans-grid">
 
+    <!-- 1 MAAND -->
+    <div class="plan-card anim">
+      <div class="plan-name">{{ plan_1m_name }}</div>
+      <div class="plan-price"><span class="cur">€</span>2<span style="font-size:1.4rem">,50</span></div>
+      <div class="plan-sub">{{ plan_1m_period }}</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="chk">✔</span> {{ plan_feat_license }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_m3u }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_xtream }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_sub }}</li>
+        <li><span class="chk">✔</span> {{ plan_feat_support }}</li>
+      </ul>
+      <div class="plan-btn">
+        <button class="btn btn-outline btn-full plan-btn" data-plan="1m">{{ plan_cta }}</button>
+      </div>
+    </div>
+
     <!-- 6 MAANDEN -->
     <div class="plan-card anim">
       <div class="plan-name">{{ plan_6m_name }}</div>

@@ -13,6 +13,7 @@ const stripe = require('stripe')(STRIPE_KEY);
 
 /* Prijzen — zet hier je echte Stripe Price IDs in via env */
 const PRICES = {
+  '1m':       process.env.STRIPE_PRICE_1M       || 'price_1m_placeholder',
   '6m':       process.env.STRIPE_PRICE_6M       || 'price_6m_placeholder',
   '1y':       process.env.STRIPE_PRICE_1Y       || 'price_1y_placeholder',
   'unlimited': process.env.STRIPE_PRICE_UNLIMITED || 'price_unlimited_placeholder'

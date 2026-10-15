@@ -24,7 +24,7 @@ const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&a
 const fmt = ts => ts ? new Date(ts * 1000).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 const day = ts => ts ? new Date(ts * 1000).toLocaleDateString('nl-NL', { timeZone: 'Europe/Amsterdam' }) : '∞';
 const shortDev = d => esc(String(d || '').replace(/^(duid-|dev-)/, '').slice(0, 10)) + '…';
-const PLAN = { '6m': '6 maanden', '1y': '1 jaar', unlimited: 'Levenslang' };
+const PLAN = { '1m': '1 maand', '6m': '6 maanden', '1y': '1 jaar', unlimited: 'Levenslang' };
 const KIND = { live: 'Live', movie: 'Film', series: 'Serie' };
 
 function page(title, body) {
